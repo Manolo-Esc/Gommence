@@ -1,0 +1,68 @@
+basePath: /api/v1
+definitions:
+  dtos.LoginRequest:
+    description: Request to sign in the program
+    properties:
+      email:
+        description: Email of the user signing in
+        example: john.doe@example.com
+        type: string
+    required:
+    - email
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API para el sistema de Opomatic
+  title: Opomatic API
+  version: "1.0"
+paths:
+  /api/saludo:
+    get:
+      consumes:
+      - application/json
+      description: Responde con un mensaje de bienvenida.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Saludo de bienvenida
+      tags:
+      - Saludo
+  /auth/signin:
+    post:
+      consumes:
+      - application/json
+      description: Receives the login data and returns a token
+      parameters:
+      - description: Login data
+        in: body
+        name: loginData
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request 2
+      summary: Sign in to the system
+      tags:
+      - Auth
+swagger: "2.0"
+tags:
+- description: Saludo de bienvenida tag
+  name: Saludo
+- description: Autenticación tag
+  name: Auth

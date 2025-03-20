@@ -1,0 +1,5 @@
+
+.DS_Store
+cmd/logs
+src/cmd/logs
+logs

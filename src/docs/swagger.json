@@ -1,0 +1,105 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API para el sistema de Opomatic",
+        "title": "Opomatic API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/api/v1",
+    "paths": {
+        "/api/saludo": {
+            "get": {
+                "description": "Responde con un mensaje de bienvenida.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Saludo"
+                ],
+                "summary": "Saludo de bienvenida",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/signin": {
+            "post": {
+                "description": "Receives the login data and returns a token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Sign in to the system",
+                "parameters": [
+                    {
+                        "description": "Login data",
+                        "name": "loginData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request 2"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "dtos.LoginRequest": {
+            "description": "Request to sign in the program",
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "description": "Email of the user signing in",
+                    "type": "string",
+                    "example": "john.doe@example.com"
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "description": "Saludo de bienvenida tag",
+            "name": "Saludo"
+        },
+        {
+            "description": "Autenticación tag",
+            "name": "Auth"
+        }
+    ]
+}
