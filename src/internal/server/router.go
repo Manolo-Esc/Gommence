@@ -39,8 +39,9 @@ func addRoutes(
 	db *gorm.DB,
 ) {
 	authHandler := rest.NewAuthHandler(*appModules.auth, logger)
-	//enrollmentHandler := rest.NewEnrollmentHandler(*appModules.enrollment, logger)
+	userHandler := rest.NewUserHandler(*appModules.user, logger)
 
+	r.Get("/health", healthHandler)
 	r.Route("/api/v1", func(r chi.Router) {
 		// URLs unauthenticated
 		r.Get("/health", healthHandler)
@@ -55,13 +56,9 @@ func addRoutes(
 			httpSwagger.URL("doc.json"),
 		))
 		// URLs authenticated via jwt bearer token
-		r.With(netw.JwtMiddleware(logger)).Route("/enrollment", func(r chi.Router) {
-			r.Get("/user/{id}", enrollmentHandler.GetUserEnrollments)
-			// r.Get("/", handlers.GetUsers)        // GET /api/users
-			// r.Post("/", handlers.CreateUser)     // POST /api/users
-			// r.Get("/{id}", handlers.GetUser)     // GET /api/users/{id}
-			// r.Put("/{id}", handlers.UpdateUser)  // PUT /api/users/{id}
-			// r.Delete("/{id}", handlers.DeleteUser) // DELETE /api/users/{id}
+		r.With(netw.JwtMiddleware(logger)).Route("/user", func(r chi.Router) {
+			//r.Get("/user/{id}", enrollmentHandler.GetUserEnrollments)
+			r.Get("/", userHandler.GetUsers) // GET /api/v1/user
 		})
 	})
 }

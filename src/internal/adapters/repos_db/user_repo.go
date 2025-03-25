@@ -43,3 +43,20 @@ func (r *UserRepositoryDB) GetUserByEmail(ctx context.Context, email string) (*d
 	}
 	return user.toDomainUser(), nil
 }
+
+func (r *UserRepositoryDB) GetUsers(ctx context.Context) ([]*domain.User, ports.APIError) {
+	ctx, span := opentelemetry.GetTracer().Start(ctx, "UserRepositoryDB.GetUsers")
+	defer span.End()
+
+	var records []User
+	result := r.dbInfra.Db.WithContext(ctx).Find(&records)
+
+	if result.Error != nil {
+		return nil, ports.NewAPIError(http.StatusInternalServerError, result.Error.Error())
+	}
+	users := make([]*domain.User, len(records))
+	for i, _ := range records {
+		users[i] = records[i].toDomainUser()
+	}
+	return users, nil
+}

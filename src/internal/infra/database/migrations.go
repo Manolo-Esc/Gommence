@@ -89,11 +89,14 @@ func createUsers(ctx context.Context, db *gorm.DB) error {
 	var repo = repos.NewUserRepository(&repos_db.DBReposInfra{Db: db, Logger: logger.GetLogger()})
 
 	for _, user := range systemUsersCreate {
+		fmt.Printf("Creating user %s\n", user.Email)
 		user.HashedPassword, _ = app.HashPassword("password")
-		if userId, err := repo.Create(ctx, &user); err == nil {
+		if userId, err := repo.Create(ctx, &user); err != nil {
+			fmt.Printf("Error creating user %s: %s\n", user.Email, err.Error())
+			return err
+		} else {
 			domainUser := domain.User{ID: userId, Email: user.Email}
 			systemUsers = append(systemUsers, domainUser)
-			return err
 		}
 	}
 	return nil

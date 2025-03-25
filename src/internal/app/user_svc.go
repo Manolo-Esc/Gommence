@@ -53,3 +53,12 @@ func (s *UserServiceImpl) GetUserByEmail(ctx context.Context, email string) (*do
 	}
 	return user, nil
 }
+
+// GetUsers retrieves a all users
+func (s *UserServiceImpl) GetUsers(ctx context.Context, byUser string) ([]*domain.User, ports.APIError) {
+	users, err := s.repo.GetUsers(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
+}

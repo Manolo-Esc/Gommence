@@ -98,8 +98,7 @@ func Run(ctx context.Context, args []string, getenv func(string) string, stdin i
 	logger := logger.GetLogger()
 	defer logger.Sync()
 
-	//docker run --name Test -p 5432:5432 -e POSTGRES_USER=postgres -e POSTGRES_DB=mydb -e POSTGRES_PASSWORD=secret -d postgres:16.3
-	dsn := "host=localhost user=postgres password=secret dbname=mydb port=5432 sslmode=disable TimeZone=UTC"
+	dsn := "host=localhost user=postgres password=secret dbname=my_db port=5432 sslmode=disable TimeZone=UTC"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Error conectando a la base de datos:", err)

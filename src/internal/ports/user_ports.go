@@ -12,9 +12,11 @@ type UserRepository interface {
 	Create(ctx context.Context, creationData *dtos.UserCreate) (string, APIError)
 	GetUserByEmail(ctx context.Context, email string) (*domain.User, APIError)
 	GetUserIdByEmail(ctx context.Context, email string) string
+	GetUsers(ctx context.Context) ([]*domain.User, APIError)
 }
 
 type UserService interface {
 	CreateUser(ctx context.Context, creationData *dtos.UserCreate) (string, APIError)
 	GetUserByEmail(ctx context.Context, email string) (*domain.User, APIError)
+	GetUsers(ctx context.Context, byUser string) ([]*domain.User, APIError)
 }

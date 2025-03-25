@@ -25,7 +25,7 @@ type databaseIntegrationSuite struct {
 }
 
 func (s *databaseIntegrationSuite) SetupSuite() { // SetupSuite runs once, before all tests
-	dsn := "host=localhost user=postgres password=secret dbname=integrationTests port=5432 sslmode=disable TimeZone=UTC"
+	dsn := "host=localhost user=postgres password=secret dbname=integration_tests port=5432 sslmode=disable TimeZone=UTC"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{Logger: logger.Default.LogMode(logger.Silent)})
 	if err != nil {
 		s.T().Fatalf("Error connecting to database: %v", err)
