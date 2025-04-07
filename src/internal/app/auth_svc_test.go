@@ -135,7 +135,7 @@ func Test_Login_HappyPath(t *testing.T) {
 	loggedUser, err := svc.Login(ctx, loginCredentials)
 	assert.Nil(t, err)
 	assert.NotEqual(t, "", loggedUser.AccessToken)
-	claims, err2 := jwt.ValidarToken(loggedUser.AccessToken)
+	claims, err2 := jwt.ValidateToken(loggedUser.AccessToken)
 	assert.Nil(t, err2)
 	assert.Equal(t, "SampleID", claims["user"])
 }

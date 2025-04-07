@@ -80,7 +80,7 @@ func noBearer_SeveralParts(t *testing.T, baseURL string) {
 }
 
 func tokenOk(t *testing.T, baseURL string) {
-	token, err := jwt.GenerarToken(testUserName)
+	token, err := jwt.CreateToken(testUserName)
 	if err != nil {
 		t.Fatalf("Error generating token: %v", err)
 	}
@@ -92,7 +92,7 @@ func tokenOk(t *testing.T, baseURL string) {
 
 func claimExtractionIsWorking(t *testing.T, baseURL string) {
 	letsTrickTheTest := "ImNotTheUser"
-	token, err := jwt.GenerarToken(letsTrickTheTest)
+	token, err := jwt.CreateToken(letsTrickTheTest)
 	if err != nil {
 		t.Fatalf("Error generating token: %v", err)
 	}
@@ -107,7 +107,7 @@ func TestMiddlewareJWT(t *testing.T) {
 		t.Skip("Skipping TestMiddlewareJWT in short mode")
 	}
 
-	handlersFuncs := []libtest.HttpTestHandlerFunc{}
+	handlersFuncs := []libtest.HttpTestHandlerFunc{} // No handlers functions
 	handlers := []libtest.HttpTestHandler{
 		{Path: "/checkToken", F: netw.JwtMiddleware(logger.GetNopLogger())(http.HandlerFunc(checkTokenHandler))},
 	}

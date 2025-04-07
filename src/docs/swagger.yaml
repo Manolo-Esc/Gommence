@@ -1,51 +1,88 @@
 basePath: /api/v1
 definitions:
-  dtos.LoginRequest:
+  dtos.LoggedUser:
+    description: Logged user information
+    properties:
+      access_token:
+        description: Authenticaton token
+        type: string
+    type: object
+  dtos.LoginCredentials:
     description: Request to sign in the program
     properties:
       email:
         description: Email of the user signing in
         example: john.doe@example.com
         type: string
+      secret:
+        description: Password or third party token of the user signing in
+        example: password
+        type: string
     required:
     - email
+    - secret
+    type: object
+  dtos.User:
+    description: User data
+    properties:
+      email:
+        description: Email of the new user
+        example: john.doe@example.com
+        type: string
+      first_name:
+        description: First name of the new user
+        example: John
+        type: string
+      id:
+        description: First name of the new user
+        example: 23GfxRTs
+        type: string
+      last_name:
+        description: First last name of the new user
+        example: Doe
+        type: string
+      second_last_name:
+        description: Second last name of the new user
+        example: Smith
+        type: string
     type: object
 host: localhost:8080
 info:
   contact: {}
-  description: API para el sistema de Opomatic
-  title: Opomatic API
+  description: Go Web Server push starter
+  title: Gommence
   version: "1.0"
 paths:
-  /api/saludo:
-    get:
-      consumes:
-      - application/json
-      description: Responde con un mensaje de bienvenida.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Saludo de bienvenida
-      tags:
-      - Saludo
   /auth/signin:
     post:
       consumes:
       - application/json
-      description: Receives the login data and returns a token
+      description: Receives login credentials and returns a token
       parameters:
-      - description: Login data
+      - description: Credentials
         in: body
         name: loginData
         required: true
         schema:
-          $ref: '#/definitions/dtos.LoginRequest'
+          $ref: '#/definitions/dtos.LoginCredentials'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.LoggedUser'
+        "400":
+          description: Invalid data
+        "500":
+          description: Error generating response or token
+      summary: Sign in the system
+      tags:
+      - Auth
+  /health:
+    get:
+      consumes:
+      - application/json
       produces:
       - application/json
       responses:
@@ -55,14 +92,49 @@ paths:
             additionalProperties:
               type: string
             type: object
-        "400":
-          description: Invalid request 2
-      summary: Sign in to the system
+      summary: Health checking URL
       tags:
-      - Auth
+      - Misc
+  /user/:
+    get:
+      description: Get all Users in the system
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dtos.User'
+            type: array
+        "400":
+          description: Invalid data
+        "500":
+          description: Error generating response
+      summary: Get all Users
+      tags:
+      - Users
+  /user/{userId}:
+    get:
+      description: Get all Users in the system
+      parameters:
+      - description: ID del usuario
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.User'
+        "400":
+          description: Invalid data
+        "500":
+          description: Error generating response or token
+      summary: Get all Users
+      tags:
+      - Users
 swagger: "2.0"
-tags:
-- description: Saludo de bienvenida tag
-  name: Saludo
-- description: Autenticación tag
-  name: Auth

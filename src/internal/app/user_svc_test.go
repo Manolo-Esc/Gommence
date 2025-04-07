@@ -29,7 +29,7 @@ func TestUserCreationWithValidData01(t *testing.T) {
 		Return("JohnId", nil)
 
 	svc := NewUserService(repo, &ServiceInfra{Permissions: perm, Logger: logger.GetNopLogger(), Cache: cache.GetNopCache()})
-	creationParams := &dtos.UserCreate{
+	creationParams := &dtos.InternalUserCreate{
 		FirstName:      "John",
 		FirstLastName:  "Doe",
 		SecondLastName: "",
@@ -57,7 +57,7 @@ func TestUserCreationWithValidData02(t *testing.T) {
 		Return("JohnId", nil)
 
 	svc := NewUserService(repo, &ServiceInfra{Permissions: perm, Logger: logger.GetNopLogger(), Cache: cache.GetNopCache()})
-	creationParams := &dtos.UserCreate{
+	creationParams := &dtos.InternalUserCreate{
 		FirstName:      "John",
 		FirstLastName:  "Doe",
 		SecondLastName: "Smith",
@@ -82,7 +82,7 @@ func TestUserCreationWithDupEmail(t *testing.T) {
 		Return("JohnId")
 
 	svc := NewUserService(repo, &ServiceInfra{Permissions: perm, Logger: logger.GetNopLogger(), Cache: cache.GetNopCache()})
-	creationParams := &dtos.UserCreate{
+	creationParams := &dtos.InternalUserCreate{
 		FirstName:      "John",
 		FirstLastName:  "Doe",
 		SecondLastName: "",
@@ -96,7 +96,7 @@ func TestUserCreationWithDupEmail(t *testing.T) {
 	assert.Equal(t, "", newUser)
 }
 
-var invalidUsersCreate = []dtos.UserCreate{
+var invalidUsersCreate = []dtos.InternalUserCreate{
 	{FirstName: "", FirstLastName: "Doe", SecondLastName: "", Email: "j1@mail.com", AuthMethod: domain.AuthMethPassword, HashedPassword: "password"},
 	{FirstName: "John", FirstLastName: "", SecondLastName: "", Email: "j1@mail.com", AuthMethod: domain.AuthMethPassword, HashedPassword: "password"},
 	{FirstName: "John", FirstLastName: "Doe", SecondLastName: "", Email: "", AuthMethod: domain.AuthMethPassword, HashedPassword: "password"},

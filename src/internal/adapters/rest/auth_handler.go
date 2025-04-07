@@ -23,7 +23,7 @@ func NewAuthHandler(service ports.AuthService, logger logger.LoggerService) *Aut
 	}
 }
 
-// @Summary Sign in to the system
+// @Summary Sign in the system
 // @Description Receives login credentials and returns a token
 // @Tags Auth
 // @Accept  json

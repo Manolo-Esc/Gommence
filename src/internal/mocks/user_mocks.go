@@ -44,7 +44,7 @@ func (m *MockUserRepository) EXPECT() *MockUserRepositoryMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockUserRepository) Create(ctx context.Context, creationData *dtos.UserCreate) (string, ports.APIError) {
+func (m *MockUserRepository) Create(ctx context.Context, creationData *dtos.InternalUserCreate) (string, ports.APIError) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", ctx, creationData)
 	ret0, _ := ret[0].(string)
@@ -73,6 +73,21 @@ func (mr *MockUserRepositoryMockRecorder) GetUserByEmail(ctx, email any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByEmail", reflect.TypeOf((*MockUserRepository)(nil).GetUserByEmail), ctx, email)
 }
 
+// GetUserById mocks base method.
+func (m *MockUserRepository) GetUserById(ctx context.Context, idUser string) (*domain.User, ports.APIError) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserById", ctx, idUser)
+	ret0, _ := ret[0].(*domain.User)
+	ret1, _ := ret[1].(ports.APIError)
+	return ret0, ret1
+}
+
+// GetUserById indicates an expected call of GetUserById.
+func (mr *MockUserRepositoryMockRecorder) GetUserById(ctx, idUser any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserById", reflect.TypeOf((*MockUserRepository)(nil).GetUserById), ctx, idUser)
+}
+
 // GetUserIdByEmail mocks base method.
 func (m *MockUserRepository) GetUserIdByEmail(ctx context.Context, email string) string {
 	m.ctrl.T.Helper()
@@ -85,6 +100,21 @@ func (m *MockUserRepository) GetUserIdByEmail(ctx context.Context, email string)
 func (mr *MockUserRepositoryMockRecorder) GetUserIdByEmail(ctx, email any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserIdByEmail", reflect.TypeOf((*MockUserRepository)(nil).GetUserIdByEmail), ctx, email)
+}
+
+// GetUsers mocks base method.
+func (m *MockUserRepository) GetUsers(ctx context.Context) ([]*domain.User, ports.APIError) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUsers", ctx)
+	ret0, _ := ret[0].([]*domain.User)
+	ret1, _ := ret[1].(ports.APIError)
+	return ret0, ret1
+}
+
+// GetUsers indicates an expected call of GetUsers.
+func (mr *MockUserRepositoryMockRecorder) GetUsers(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsers", reflect.TypeOf((*MockUserRepository)(nil).GetUsers), ctx)
 }
 
 // MockUserService is a mock of UserService interface.
@@ -112,7 +142,7 @@ func (m *MockUserService) EXPECT() *MockUserServiceMockRecorder {
 }
 
 // CreateUser mocks base method.
-func (m *MockUserService) CreateUser(ctx context.Context, creationData *dtos.UserCreate) (string, ports.APIError) {
+func (m *MockUserService) CreateUser(ctx context.Context, creationData *dtos.InternalUserCreate) (string, ports.APIError) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateUser", ctx, creationData)
 	ret0, _ := ret[0].(string)
@@ -139,4 +169,34 @@ func (m *MockUserService) GetUserByEmail(ctx context.Context, email string) (*do
 func (mr *MockUserServiceMockRecorder) GetUserByEmail(ctx, email any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByEmail", reflect.TypeOf((*MockUserService)(nil).GetUserByEmail), ctx, email)
+}
+
+// GetUserById mocks base method.
+func (m *MockUserService) GetUserById(ctx context.Context, idUser, byUser string) (*domain.User, ports.APIError) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserById", ctx, idUser, byUser)
+	ret0, _ := ret[0].(*domain.User)
+	ret1, _ := ret[1].(ports.APIError)
+	return ret0, ret1
+}
+
+// GetUserById indicates an expected call of GetUserById.
+func (mr *MockUserServiceMockRecorder) GetUserById(ctx, idUser, byUser any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserById", reflect.TypeOf((*MockUserService)(nil).GetUserById), ctx, idUser, byUser)
+}
+
+// GetUsers mocks base method.
+func (m *MockUserService) GetUsers(ctx context.Context, byUser string) ([]*domain.User, ports.APIError) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUsers", ctx, byUser)
+	ret0, _ := ret[0].([]*domain.User)
+	ret1, _ := ret[1].(ports.APIError)
+	return ret0, ret1
+}
+
+// GetUsers indicates an expected call of GetUsers.
+func (mr *MockUserServiceMockRecorder) GetUsers(ctx, byUser any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsers", reflect.TypeOf((*MockUserService)(nil).GetUsers), ctx, byUser)
 }

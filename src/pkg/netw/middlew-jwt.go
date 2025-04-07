@@ -10,14 +10,14 @@ import (
 	"github.com/Manolo-Esc/gommence/src/pkg/logger"
 )
 
-type contextKey string // Clave para el contexto (para evitar colisiones)
-const userInfoKey contextKey = "opotk_userInfo"
+type contextKey string // to avoid collision with other context keys
+const userInfoKey contextKey = "gommence_tk_userInfo"
 
 /*
-Uso downstream
+How to use downstream:
 
 	if userInfo, ok := netw.JwtTokenClaims(ctx); ok {
-		fmt.Println("Usuario:", userInfo["user"])
+		fmt.Println("User:", userInfo["user"])
 		fmt.Println("Expiration:", userInfo["exp"])
 	}
 */
@@ -48,58 +48,13 @@ func JwtMiddleware(logger logger.LoggerService) func(http.Handler) http.Handler 
 				return
 			}
 			token := parts[1]
-			tokenPayload, err := jwt.ValidarToken(token)
+			tokenPayload, err := jwt.ValidateToken(token)
 			if err != nil {
 				http.Error(w, fmt.Sprintf("error in token: %s", err.Error()), http.StatusUnauthorized) // the text is used in tests!
 				return
 			}
 			ctx := context.WithValue(r.Context(), userInfoKey, tokenPayload)
-			/// verfificar que siempre viene user y si no fallar aqui mismo ??? xxxx (& test)
-
 			nextHandler.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }
-
-/*
-func JwtMiddleware(nextHandler http.Handler, logger *zap.Logger) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-			authHeader := r.Header.Get("Authorization")
-
-			// Verificar si la cabecera está presente y tiene el formato correcto
-			if authHeader == "" {
-				http.Error(w, "Authorization header missing", http.StatusUnauthorized)
-				return
-			}
-
-			// El token suele venir con el prefijo "Bearer "
-			parts := strings.Split(authHeader, " ")
-			if len(parts) != 2 || parts[0] != "Bearer" {
-				http.Error(w, "Invalid Authorization header format", http.StatusUnauthorized)
-				return
-			}
-
-			// Extraer el token
-			token := parts[1]
-
-			// Aquí podrías validar el token JWT
-			fmt.Fprintf(w, "Token JWT recibido: %s", token)
-
-
-		logger.Info("Llamada recibida")
-
-		ctx := context.WithValue(r.Context(), userKey, "user")
-
-
-		user, ok := r.Context().Value(userKey).(string)
-		if !ok {
-			http.Error(w, "Usuario no encontrado", http.StatusInternalServerError)
-			return
-		}
-
-
-		nextHandler.ServeHTTP(w, r.WithContext(ctx))
-	})
-}
-*/

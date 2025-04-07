@@ -9,46 +9,6 @@ import (
 	"time"
 )
 
-/*
-func RunOpomaticServer(t *testing.T, testFunction func(t *testing.T)) {
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second) // Timeout para el test
-	defer cancel()
-
-	var wg sync.WaitGroup
-	wg.Add(1) // Añadimos un contador al WaitGroup, indicando que esperamos un proceso
-
-	go func() {
-		defer wg.Done() // Al finalizar el servicio, decrementamos el contador
-		var args []string
-		// func Run(ctx context.Context, args []string, getenv func(string) string, stdin io.Reader, stdout, stderr io.Writer) error
-		if err := server.Run(ctx, args, nil, os.Stdin, os.Stdout, os.Stderr); err != nil {
-			t.Errorf("Error al ejecutar el servicio: %v", err)
-		}
-	}()
-
-	// Esperar a que el servidor esté online  XXX no tener hardocoded tantas cosas de la ruta!
-	if err := WaitForReady(ctx, 5, "http://localhost:5080/health"); err != nil {
-		t.Fatal("Server is not ready")
-	}
-
-	testFunction(t)
-
-	cancel() // Paramos la funcion Run()
-	done := make(chan struct{})
-	go func() {
-		wg.Wait()
-		close(done) // Al terminar, cerramos el canal
-	}()
-
-	// Esperamos hasta que el WaitGroup sea decrementado o se acabe el timeout
-	select {
-	case <-done:
-		t.Log("Server gracefully stopped")
-	case <-time.After(10 * time.Second):
-		t.Fatal("El servicio no terminó a tiempo")
-	}
-}*/
-
 // waitForReady calls the specified endpoint until it gets a 200 response or until the context is cancelled or the timeout is reached.
 func WaitForReady(ctx context.Context, timeout time.Duration, endpoint string) error {
 	client := http.Client{}
@@ -108,7 +68,7 @@ func registerHandlers(mux *http.ServeMux, funcs []HttpTestHandlerFunc, handlers 
 	}
 }
 
-// Handler para la ruta "/"
+// Handler for path "/"
 func healthHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte(`{"mensaje": "Up & Running"}`))

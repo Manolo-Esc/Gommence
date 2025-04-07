@@ -16,7 +16,7 @@ type LoggedUser struct {
 }
 
 // @Name UserSignUp
-// @Description Request to register a new user in the platform
+// @Description Request to create a new user in the platform
 type UserSignUp struct {
 	FirstName      string            `json:"first_name" validate:"required" example:"John"`                  // First name of the new user
 	FirstLastName  string            `json:"last_name" validate:"required" example:"Doe"`                    // First last name of the new user

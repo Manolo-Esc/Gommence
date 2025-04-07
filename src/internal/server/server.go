@@ -28,26 +28,20 @@ import (
 	"gorm.io/gorm"
 )
 
-func WebServiceFactory(
-	appModules *AppModules,
-	logger logger.LoggerService,
-	db *gorm.DB,
-) http.Handler {
+func teste(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "userId")
+	fmt.Fprintf(w, "userId: %s", id)
+}
+
+func WebServiceFactory(appModules *AppModules, logger logger.LoggerService, db *gorm.DB) http.Handler {
 	r := chi.NewRouter()
-	// Middlewares globales
+	// Global Middlewares
 	//r.Use(middleware.RealIP)
 	r.Use(middleware.Recoverer)
-	// ver los ejemplos y el codigo de https://github.com/riandyrn/otelchi/metric para capturar metricas sobre las peticiones
-	//r.Use(otelchi.Middleware("opomatic", otelchi.WithChiRoutes(r)))  // xxxx  (si lo activamos posiblemente no necesitemos el middleware de log)
+	// See samples in https://github.com/riandyrn/otelchi/metric to record metrics about the received calls
 	r.Use(netw.LogMiddleware(logger))
 	r.Use(netw.NoCacheMiddleware)
-
-	addRoutes(
-		appModules,
-		r,
-		logger,
-		db,
-	)
+	addRoutes(appModules, r, logger, db)
 	var handler http.Handler = r
 	return handler
 }
@@ -58,24 +52,25 @@ type Config struct {
 }
 
 func initTracerProvider() (*trace.TracerProvider, error) {
-	// Exportador OTLP binario (puede configurarse para Jaeger, Prometheus, etc.)
+	// Binary OTLP exporter (can be configured for Jaeger, Prometheus, etc.)
 	// ctx := context.Background()
 	// exporter, err := otlptrace.New(ctx)
 	// if err != nil {
 	// 	return nil, err
 	// }
+
+	// Console exporter
 	exporter, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
 	if err != nil {
 		log.Fatalf("failed to create stdout exporter: %v", err)
 	}
 
-	// Crear el proveedor de trazas
 	tp := trace.NewTracerProvider(
-		//trace.WithSampler(trace.ParentBased(trace.TraceIDRatioBased(0.2))), XXX configurar esto? Por defecto usa AlwaysSample, guarda el 100% de las trazas
+		//trace.WithSampler(trace.ParentBased(trace.TraceIDRatioBased(0.2))), // Default is AlwaysSample, keeping 100% traces
 		trace.WithBatcher(exporter),
 		trace.WithResource(resource.NewWithAttributes(
 			semconv.SchemaURL,
-			semconv.ServiceNameKey.String("opomatic"),
+			semconv.ServiceNameKey.String("gommence"),
 		)),
 	)
 
@@ -83,61 +78,49 @@ func initTracerProvider() (*trace.TracerProvider, error) {
 	return tp, nil
 }
 
+func initDatabase(ctx context.Context, dsn string) (*gorm.DB, error) {
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatal("Error connecting to database:", err)
+		return nil, err
+	}
+	err = database.Migrate(ctx, db)
+	if err != nil {
+		log.Fatal("Error migrating or cheking database version: ", err)
+		return nil, err
+	}
+	return db, nil
+}
+
 func Run(ctx context.Context, args []string, getenv func(string) string, stdin io.Reader, stdout, stderr io.Writer) error {
-	// crear un contexto que se cancela con SIGINT, SIGTERM o SIGHUP
-	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM, syscall.SIGHUP) // No debemos capturar SIGKILL ni SIGSTOP
-	defer cancel()                                                                          // funcion de cancelacion del contexto
+	// Create a context that can be cancelled with SIGINT, SIGTERM o SIGHUP
+	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM, syscall.SIGHUP) // We must not capture SIGKILL or SIGSTOP
+	defer cancel()
 
 	tp, err := initTracerProvider()
 	if err != nil {
 		fmt.Println("Error initializing OpenTelemetry:", err)
 		return err
 	}
-
-	// Inicialización de los recursos
 	logger := logger.GetLogger()
 	defer logger.Sync()
 
-	dsn := "host=localhost user=postgres password=secret dbname=my_db port=5432 sslmode=disable TimeZone=UTC"
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := initDatabase(ctx, "host=localhost user=postgres password=secret dbname=my_db port=5432 sslmode=disable TimeZone=UTC") // args or getenv should be used here
 	if err != nil {
-		log.Fatal("Error conectando a la base de datos:", err)
-	}
-	//var db *gorm.DB = nil
-	logger.Info("Conexión a la base de datos exitosa")
-	err = database.Migrate(ctx, db)
-	if err != nil {
-		log.Fatal("Error migrating or cheking database version: ", err)
+		return err
 	}
 
 	appModules := ProductionAppModulesFactory(logger, db, cache.GetCache())
 
-	// Migraciones automáticas (solo para desarrollo)
-	//db.AutoMigrate(&User{})
+	config := Config{Host: "127.0.0.1", Port: "5080"} // args or getenv should be used here
 
-	config := Config{Host: "127.0.0.1", Port: "5080"}
-	// tenantsStore := NewTenantsStore()
-	// slackLinkStore := NewSlackLinkStore()
-	// msteamsLinkStore := NewMSTeamsLinkStore()
-	// proxy := NewProxy()
+	srv := WebServiceFactory(appModules, logger, db)
 
-	// Crear el servidor HTTP
-	srv := WebServiceFactory(
-		appModules,
-		logger,
-		db,
-	// config,
-	// tenantsStore,
-	// slackLinkStore,
-	// msteamsLinkStore,
-	// proxy,
-	)
 	httpServer := &http.Server{
 		Addr:    net.JoinHostPort(config.Host, config.Port),
 		Handler: srv,
 	}
-
-	// Lanzar el servidor en una goroutine para no bloquear
+	// launch server in a goroutine to avoid blocking this one
 	go func() {
 		log.Printf("listening on %s\n", httpServer.Addr)
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -145,26 +128,26 @@ func Run(ctx context.Context, args []string, getenv func(string) string, stdin i
 		}
 	}()
 
-	// Manejo de cierre y limpieza
 	var wg sync.WaitGroup
 	wg.Add(1)
-	go func() {
+	go func() { // cleaning goroutine
 		defer wg.Done()
-		<-ctx.Done()                                                                     // Esperar señal de cierre
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second) // crear un nuevo contexto con un tiempo límite
+		<-ctx.Done() // wait closing signal
+		// Program shutdown
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second) // new context with timeout
 		defer cancel()
 		log.Println("shutting down http server")
 		if err := httpServer.Shutdown(shutdownCtx); err != nil {
 			fmt.Fprintf(stderr, "error shutting down http server: %s\n", err)
 		}
-		shutdownCtx2, cancel2 := context.WithTimeout(context.Background(), 10*time.Second) // crear un nuevo contexto con un tiempo límite
+		shutdownCtx2, cancel2 := context.WithTimeout(context.Background(), 10*time.Second) // new context with timeout
 		defer cancel2()
 		log.Println("shutting down OpenTelemetry")
 		if err := tp.Shutdown(shutdownCtx2); err != nil {
 			fmt.Fprintf(stderr, "error shutting down OpenTelemetry: %s\n", err)
 		}
 	}()
-	// Esperar que todas las goroutines terminen
+	// Wait for cleaning goroutine
 	wg.Wait()
 	return nil
 }

@@ -5,9 +5,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Manolo-Esc/gommence/src/internal/dtos"
 	"github.com/Manolo-Esc/gommence/src/internal/ports"
 	"github.com/Manolo-Esc/gommence/src/pkg/logger"
 	"github.com/Manolo-Esc/gommence/src/pkg/netw"
+	"github.com/go-chi/chi/v5"
 )
 
 type UserHandler struct {
@@ -34,7 +36,7 @@ func (h *UserHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	byUser := netw.JwtGetUserInToken(ctx)
 
-	ctx, cancel := context.WithTimeout(ctx, 3*time.Second) // Establecer un timeout para la operación
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second) // set a timeout for the request
 	defer cancel()
 
 	response, errLogin := h.service.GetUsers(ctx, byUser)
@@ -43,7 +45,9 @@ func (h *UserHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := netw.Encode(w, r, http.StatusOK, response); err != nil {
+	dtosResponse := dtos.FromDomainUsers(response)
+
+	if err := netw.Encode(w, r, http.StatusOK, dtosResponse); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -56,22 +60,24 @@ func (h *UserHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} dtos.User
 // @Failure 400 "Invalid data"
 // @Failure 500 "Error generating response or token"
-// @Router /User/user/{userId} [get]
+// @Router /user/{userId} [get]
 func (h *UserHandler) GetUserById(w http.ResponseWriter, r *http.Request) {
-	// ctx := r.Context()
-	// byUser := netw.JwtGetUserInToken(ctx)
-	// id := chi.URLParam(r, "userId")
+	ctx := r.Context()
+	byUser := netw.JwtGetUserInToken(ctx)
+	id := chi.URLParam(r, "userId")
 
-	// ctx, cancel := context.WithTimeout(ctx, 3*time.Second) // Establecer un timeout para la operación
-	// defer cancel()
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second) // set a timeout for the request
+	defer cancel()
 
-	// response, errLogin := h.service.GetUsersOfUser(ctx, byUser, id)
-	// if errLogin != nil {
-	// 	http.Error(w, errLogin.Error(), errLogin.Status())
-	// 	return
-	// }
+	response, err := h.service.GetUserById(ctx, id, byUser)
+	if err != nil {
+		http.Error(w, err.Error(), err.Status())
+		return
+	}
 
-	// if err := netw.Encode(w, r, http.StatusOK, response); err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// }
+	dtosResponse := dtos.FromDomainUser(response)
+
+	if err := netw.Encode(w, r, http.StatusOK, dtosResponse); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }

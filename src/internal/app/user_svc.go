@@ -20,7 +20,7 @@ func NewUserService(repo ports.UserRepository, serviceInfra *ServiceInfra) ports
 }
 
 // CreateUser creates a new user in the platform. It is intended to be used only internally. REST calls shall be targeted to the auth_svc.
-func (s *UserServiceImpl) CreateUser(ctx context.Context, creationData *dtos.UserCreate) (string, ports.APIError) {
+func (s *UserServiceImpl) CreateUser(ctx context.Context, creationData *dtos.InternalUserCreate) (string, ports.APIError) {
 	if err := validator.ValidateStruct(creationData); err != nil {
 		return "", ports.NewAPIError(http.StatusBadRequest, err.Error())
 	}
@@ -56,9 +56,19 @@ func (s *UserServiceImpl) GetUserByEmail(ctx context.Context, email string) (*do
 
 // GetUsers retrieves a all users
 func (s *UserServiceImpl) GetUsers(ctx context.Context, byUser string) ([]*domain.User, ports.APIError) {
+	// we should check if 'byUser' has permissions for this query
 	users, err := s.repo.GetUsers(ctx)
 	if err != nil {
 		return nil, err
 	}
 	return users, nil
+}
+
+func (s *UserServiceImpl) GetUserById(ctx context.Context, idUser string, byUser string) (*domain.User, ports.APIError) {
+	// we should check if 'byUser' has permissions for this query
+	user, err := s.repo.GetUserById(ctx, idUser)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }

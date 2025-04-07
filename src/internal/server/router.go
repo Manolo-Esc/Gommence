@@ -15,11 +15,9 @@ import (
 // These are annotations for Swagger documentation
 // @title           Gommence
 // @version         1.0
-// @description     Go Web Server push starter
+// @description     Go Web Server starter kit
 // @host           localhost:8080
 // @BasePath       /api/v1
-// @Tag.name       User
-// @Tag.name       Auth
 
 // @Summary Health checking URL
 // @Tags Misc
@@ -32,21 +30,16 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`{"mensaje": "service is online"}`))
 }
 
-func addRoutes(
-	appModules *AppModules,
-	r *chi.Mux,
-	logger logger.LoggerService,
-	db *gorm.DB,
-) {
+func addRoutes(appModules *AppModules, r *chi.Mux, logger logger.LoggerService, db *gorm.DB) {
 	authHandler := rest.NewAuthHandler(*appModules.auth, logger)
 	userHandler := rest.NewUserHandler(*appModules.user, logger)
 
-	r.Get("/health", healthHandler)
+	r.Get("/health", healthHandler) // GET /health
 	r.Route("/api/v1", func(r chi.Router) {
 		// URLs unauthenticated
-		r.Get("/health", healthHandler)
+		r.Get("/health", healthHandler) // GET /api/v1/health
 		r.Route("/auth", func(r chi.Router) {
-			r.Post("/signin", authHandler.Login)
+			r.Post("/signin", authHandler.Login) // POST /api/v1/auth/signin
 		})
 		// swagger: http://localhost:5080/api/v1/doc/index.html
 		r.Get("/doc/doc.json", func(w http.ResponseWriter, r *http.Request) {
@@ -55,10 +48,11 @@ func addRoutes(
 		r.Get("/doc/*", httpSwagger.Handler(
 			httpSwagger.URL("doc.json"),
 		))
+
 		// URLs authenticated via jwt bearer token
 		r.With(netw.JwtMiddleware(logger)).Route("/user", func(r chi.Router) {
-			//r.Get("/user/{id}", enrollmentHandler.GetUserEnrollments)
-			r.Get("/", userHandler.GetUsers) // GET /api/v1/user
+			r.Get("/{userId}", userHandler.GetUserById) // GET /api/v1/user/u/{userId}
+			r.Get("/", userHandler.GetUsers)            // GET /api/v1/user
 		})
 	})
 }

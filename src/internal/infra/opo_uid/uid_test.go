@@ -15,15 +15,15 @@ type packetDateSample struct {
 }
 
 var packetDateSamples = []packetDateSample{
-	{1, 0, 0, "0800"},    // Día 1, 00:00
-	{15, 23, 59, "7DFB"}, // Día 15, 23:59
-	{31, 23, 59, "FDFB"}, // Día 31, 23:59
-	{31, 12, 30, "FB1E"}, // Día 31, 12:30
-	{5, 6, 15, "298F"},   // Día 5, 06:15
-	{7, 7, 7, "39C7"},    // Día 7, 07:07
-	{2, 2, 2, "1082"},    // Día 2, 02:02
-	{28, 10, 5, "E285"},  // Día 28, 10:05
-	{3, 23, 45, "1DED"},  // Día 3, 23:45
+	{1, 0, 0, "0800"},    // Day 1, 00:00
+	{15, 23, 59, "7DFB"}, // Day 15, 23:59
+	{31, 23, 59, "FDFB"}, // Day 31, 23:59
+	{31, 12, 30, "FB1E"}, // Day 31, 12:30
+	{5, 6, 15, "298F"},   // Day 5, 06:15
+	{7, 7, 7, "39C7"},    // Day 7, 07:07
+	{2, 2, 2, "1082"},    // Day 2, 02:02
+	{28, 10, 5, "E285"},  // Day 28, 10:05
+	{3, 23, 45, "1DED"},  // Day 3, 23:45
 }
 
 func TestPacketDate(t *testing.T) {
@@ -40,7 +40,7 @@ type uidPairs struct {
 var uidSamples = []uidPairs{
 	{"5cwFANhpap8", "FFFFFFFFFFFFFFF"}, // bigger theorical value: it takes 11 digits
 	{"32222222222", "50633659656D971"}, // first value that needs 11 digits
-	{"ZZZZZZZZZZ", "50633659656D970"},  // last value with 10 digits 0x6336 -> day 12, hours 12, minutes 54 so we can exced this numeber easily
+	{"ZZZZZZZZZZ", "50633659656D970"},  // last value with 10 digits 0x6336 -> day 12, hours 12, minutes 54 so we can exced this number easily
 	{"3gZH3h2fV", "000800125000000"},   // smallest theorical value: it takes 9 digits
 	{"32quX3yrp2b", "50F800125000000"}, // seconds 50, day 31 -> 11 digits
 	{"TRgQviFLxt", "47B59F2256CA2D4"},

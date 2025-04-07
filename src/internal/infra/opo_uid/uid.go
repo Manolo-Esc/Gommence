@@ -11,16 +11,13 @@ import (
 	"time"
 )
 
-// crand "crypto/rand"
-
 type criptoRandIDGenerator struct {
 	sync.Mutex
 	randSource *rand.Rand
 }
 
 var (
-	// Alfabeto personalizado para Base62
-	customBase62Alphabet = "23456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ" // No hay '0', 'O', 'l', 'I', '1' para evitar confusiones
+	customBase62Alphabet = "23456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ" // No '0', 'O', 'l', 'I', '1' to avoid confusion
 	base                 = big.NewInt(int64(len(customBase62Alphabet)))
 	criptoRand           = &criptoRandIDGenerator{}
 )
@@ -31,7 +28,6 @@ func New() string {
 	return encodeHexNumberString(uid)
 }
 
-// DecodeSavimboUid decodifica un Savimbo UID de Base62 a Hex
 func DecodeUid(base62 string) (string, error) {
 	decimalValue := base62ToDecimal(base62)
 	if decimalValue == nil {
@@ -40,8 +36,6 @@ func DecodeUid(base62 string) (string, error) {
 	return decimalToHex(decimalValue), nil
 }
 
-// based on https://github.com/open-telemetry/opentelemetry-go/blob/main/sdk/trace/id_generator.go
-// Obtiene un aleatorio codificado en 6 caracteres con la libreria cripto/rand
 func getRandomNumber() string {
 	criptoRand.Lock()
 	defer criptoRand.Unlock()
@@ -52,33 +46,23 @@ func getRandomNumber() string {
 		criptoRand.randSource = rand.New(rand.NewSource(rngSeed))
 	}
 
-	buf := make([]byte, 3) // Número entre 0 y 0xFFFFFF (16.777.215)
+	buf := make([]byte, 3) // Number between 0 and 0xFFFFFF (16.777.215)
 	for {
 		_, _ = criptoRand.randSource.Read(buf)
 		if buf[0] != 0 {
 			break
 		}
 	}
-	// value := binary.BigEndian.Uint64(buffer)
-	// hexString := fmt.Sprintf("%X", value) // `%X` para hexadecimal en mayúsculas
 
 	hexString := fmt.Sprintf("%X", buf)
 	return hexString
 }
-
-// getRandomNumber genera un número aleatorio en hexadecimal con la libreria math (6 caracteres)
-// func getRandomNumber() string {
-// 	rand.Seed(time.Now().UnixNano()) // Semilla para la aleatoriedad
-// 	randNum := rand.Intn(16777215)   // Número entre 0 y 0xFFFFFF
-// 	return fmt.Sprintf("%06X", randNum)
-// }
 
 func packetNumbers(day int, hours int, minutes int) string {
 	var ret uint16 = (uint16(day) << 11) | (uint16(hours) << 6) | uint16(minutes)
 	return fmt.Sprintf("%04X", ret)
 }
 
-// getEncodedDate obtiene la fecha codificada en 9 caracteres
 func getEncodedDate2() string {
 	now := time.Now()
 
@@ -90,7 +74,7 @@ func getEncodedDate2() string {
 	seconds := now.Second()
 	milliseconds := now.Nanosecond() / 1e6
 
-	// Convertir segundos a centisegundos (escala de 0..99 en vez de 0..59)
+	// change scale to 0..99 instead of 0..59)
 	centiSeconds := float64(seconds) + float64(milliseconds)/1000
 	centiSeconds = centiSeconds * (100.0 / 60.0)
 	seconds = int(centiSeconds)
@@ -100,7 +84,6 @@ func getEncodedDate2() string {
 	return fmt.Sprintf("%02d%s%s%d", seconds, packeted, fmt.Sprintf("%X", int(month)), year)
 }
 
-// getEncodedDate obtiene la fecha codificada en 11 caracteres
 func getEncodedDate() string {
 	now := time.Now()
 
@@ -112,7 +95,6 @@ func getEncodedDate() string {
 	seconds := now.Second()
 	milliseconds := now.Nanosecond() / 1e6
 
-	// Convertir segundos a centisegundos (escala de 0..99 en vez de 0..59)
 	centiSeconds := float64(seconds) + float64(milliseconds)/1000
 	centiSeconds = centiSeconds * (100.0 / 60.0)
 	seconds = int(centiSeconds)
@@ -121,9 +103,8 @@ func getEncodedDate() string {
 		seconds, minutes, hours, day, strings.ToUpper(fmt.Sprintf("%X", int(month))), year)
 }
 
-// encodeHexNumberString convierte un número hexadecimal en Base62
 func encodeHexNumberString(input string) string {
-	// Convertir la cadena hexadecimal en un big.Int
+	// Convert hexadecimal string to big.Int
 	num := new(big.Int)
 	num.SetString(input, 16)
 
@@ -131,31 +112,30 @@ func encodeHexNumberString(input string) string {
 	zero := big.NewInt(0)
 	mod := new(big.Int)
 
-	// Convertir big.Int a Base62
+	// Convert big.Int a Base62
 	for num.Cmp(zero) > 0 {
 		num.DivMod(num, base, mod)
 		base62Str.WriteString(string(customBase62Alphabet[mod.Int64()]))
 	}
 
-	// Invertir la cadena ya que el cálculo fue en orden inverso
 	runes := []rune(base62Str.String())
 	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
 		runes[i], runes[j] = runes[j], runes[i]
 	}
 
 	result := string(runes)
-	result = padLeftWithZero(result, 11) // Asegurarse de que tenga 11 caracteres
+	result = padLeftWithZero(result, 11)
 	return result
 }
 
 func padLeftWithZero(input string, length int) string {
 	if len(input) >= length {
-		return input // Si ya tiene la longitud deseada, lo devolvemos tal cual
+		return input
 	}
 
 	zeroRune := string(customBase62Alphabet[0])
 	paddingSize := length - len(input)
-	padding := strings.Repeat(zeroRune, paddingSize) // Generamos la cadena de "0"
+	padding := strings.Repeat(zeroRune, paddingSize)
 
 	return padding + input
 }
@@ -167,7 +147,6 @@ func base62ToDecimal(base62 string) *big.Int {
 		index := big.NewInt(int64(strings.IndexRune(customBase62Alphabet, char)))
 		if index.Int64() == -1 {
 			return nil
-			//return nil, errors.New(fmt.Sprintf("Character %c is not in the alphabet.", char))
 		}
 		decimal.Mul(decimal, base)  // decimal *= BASE62
 		decimal.Add(decimal, index) // decimal += index
@@ -176,7 +155,6 @@ func base62ToDecimal(base62 string) *big.Int {
 	return decimal
 }
 
-// decimalToHex convierte un big.Int a una cadena hexadecimal en mayúsculas
 func decimalToHex(decimal *big.Int) string {
 	return fmt.Sprintf("%015X", decimal)
 }

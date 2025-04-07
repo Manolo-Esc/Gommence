@@ -37,21 +37,12 @@ func (s *AuthServiceImpl) Login(ctx context.Context, credentials dtos.LoginCrede
 		return nil, ports.NewAPIError(http.StatusBadRequest, "Only password authentication is currently supported")
 	}
 
-	token, err2 := jwt.GenerarToken(user.ID)
+	token, err2 := jwt.CreateToken(user.ID)
 	if err2 != nil {
 		return nil, ports.NewAPIError(http.StatusInternalServerError, err2.Error())
 	}
 	return &dtos.LoggedUser{AccessToken: token}, nil
 }
-
-// func (s *UserServiceImpl) CreateUser(ctx context.Context, creationData *dtos.UserCreate) (*dtos.LoggedUser, ports.APIError) {
-// 	userId, err := s.repo.Create(ctx, creationData)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	// xxxx get token
-// 	return ret, nil
-// }
 
 // HashPassword generates a bcrypt hash of the password
 func HashPassword(password string) (string, error) {
@@ -67,28 +58,3 @@ func CheckPassword(password, hashedPassword string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 	return err == nil // Returns true if passwords match
 }
-
-// CreateUser saves a new user with a hashed password
-// func CreateUser(db *gorm.DB, username, password string) error {
-// 	hashedPassword, err := HashPassword(password)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	user := User{
-// 		Username:       username,
-// 		HashedPassword: hashedPassword,
-// 	}
-
-// 	return db.Create(&user).Error
-// }
-
-// // AuthenticateUser checks username and password against stored data
-// func AuthenticateUser(db *gorm.DB, username, password string) bool {
-// 	var user User
-// 	if err := db.Where("username = ?", username).First(&user).Error; err != nil {
-// 		return false // User not found
-// 	}
-
-// 	return CheckPassword(password, user.HashedPassword)
-// }

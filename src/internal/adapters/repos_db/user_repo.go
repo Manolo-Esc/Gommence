@@ -18,13 +18,22 @@ func NewUserRepository(dbInfra *DBReposInfra) ports.UserRepository {
 	return &UserRepositoryDB{dbInfra: dbInfra}
 }
 
-func (r *UserRepositoryDB) Create(ctx context.Context, creationData *dtos.UserCreate) (string, ports.APIError) {
+func (r *UserRepositoryDB) Create(ctx context.Context, creationData *dtos.InternalUserCreate) (string, ports.APIError) {
 	ctx, span := opentelemetry.GetTracer().Start(ctx, "UserRepositoryDB.Create")
 	defer span.End()
 
 	dbUser := fromDtosUserCreate(creationData)
 	err := CreateEntityWithPID(ctx, r.dbInfra.Db, dbUser)
 	return dbUser.ID, err
+}
+
+func (r *UserRepositoryDB) GetUserById(ctx context.Context, idUser string) (*domain.User, ports.APIError) {
+	var user User
+	r.dbInfra.Db.WithContext(ctx).Where("id = ?", idUser).First(&user)
+	if user.ID == "" {
+		return nil, ports.NewAPIError(http.StatusNotFound, "User not found")
+	}
+	return user.toDomainUser(), nil
 }
 
 // GetUserIdByEmail returns the user ID associated with the given email. If the email is not found, it returns an empty string.

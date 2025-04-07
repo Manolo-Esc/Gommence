@@ -23,9 +23,10 @@ func (VersionDBEntity) TableName() string {
 	return "version_db"
 }
 
-var systemUsersCreate = []dtos.UserCreate{
+var systemUsersCreate = []dtos.InternalUserCreate{
 	{FirstName: "Esmerelda", FirstLastName: "Weatherwax", Email: "granny@lancre.dw", AuthMethod: domain.AuthMethPassword},
 	{FirstName: "Sam", FirstLastName: "Vimes", Email: "theduke@ankh.dw", AuthMethod: domain.AuthMethPassword},
+	{FirstName: "Guest", FirstLastName: "User", Email: "user@mail.com", AuthMethod: domain.AuthMethPassword},
 }
 var systemUsers []domain.User // The above systemUsersCreate information plus the ID
 

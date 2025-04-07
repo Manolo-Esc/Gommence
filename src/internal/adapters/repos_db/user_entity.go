@@ -7,6 +7,7 @@ import (
 	"github.com/Manolo-Esc/gommence/src/internal/dtos"
 )
 
+// This will be a table in the database
 type User struct {
 	BaseDBModel
 	FirstName      string
@@ -17,7 +18,7 @@ type User struct {
 	HashedPassword sql.NullString // Can be null depending on the AuthMethod
 }
 
-func fromDtosUserCreate(creationData *dtos.UserCreate) *User {
+func fromDtosUserCreate(creationData *dtos.InternalUserCreate) *User {
 	return &User{
 		FirstName:      creationData.FirstName,
 		FirstLastName:  creationData.FirstLastName,

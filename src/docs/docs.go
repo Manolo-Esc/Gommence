@@ -15,35 +15,9 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/saludo": {
-            "get": {
-                "description": "Responde con un mensaje de bienvenida.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Saludo"
-                ],
-                "summary": "Saludo de bienvenida",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/auth/signin": {
             "post": {
-                "description": "Receives the login data and returns a token",
+                "description": "Receives login credentials and returns a token",
                 "consumes": [
                     "application/json"
                 ],
@@ -53,18 +27,46 @@ const docTemplate = `{
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Sign in to the system",
+                "summary": "Sign in the system",
                 "parameters": [
                     {
-                        "description": "Login data",
+                        "description": "Credentials",
                         "name": "loginData",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dtos.LoginRequest"
+                            "$ref": "#/definitions/dtos.LoginCredentials"
                         }
                     }
                 ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.LoggedUser"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid data"
+                    },
+                    "500": {
+                        "description": "Error generating response or token"
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Misc"
+                ],
+                "summary": "Health checking URL",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -74,50 +76,148 @@ const docTemplate = `{
                                 "type": "string"
                             }
                         }
+                    }
+                }
+            }
+        },
+        "/user/": {
+            "get": {
+                "description": "Get all Users in the system",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Get all Users",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dtos.User"
+                            }
+                        }
                     },
                     "400": {
-                        "description": "Invalid request 2"
+                        "description": "Invalid data"
+                    },
+                    "500": {
+                        "description": "Error generating response"
+                    }
+                }
+            }
+        },
+        "/user/{userId}": {
+            "get": {
+                "description": "Get all Users in the system",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Get all Users",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID del usuario",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.User"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid data"
+                    },
+                    "500": {
+                        "description": "Error generating response or token"
                     }
                 }
             }
         }
     },
     "definitions": {
-        "dtos.LoginRequest": {
+        "dtos.LoggedUser": {
+            "description": "Logged user information",
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "description": "Authenticaton token",
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.LoginCredentials": {
             "description": "Request to sign in the program",
             "type": "object",
             "required": [
-                "email"
+                "email",
+                "secret"
             ],
             "properties": {
                 "email": {
                     "description": "Email of the user signing in",
                     "type": "string",
                     "example": "john.doe@example.com"
+                },
+                "secret": {
+                    "description": "Password or third party token of the user signing in",
+                    "type": "string",
+                    "example": "password"
+                }
+            }
+        },
+        "dtos.User": {
+            "description": "User data",
+            "type": "object",
+            "properties": {
+                "email": {
+                    "description": "Email of the new user",
+                    "type": "string",
+                    "example": "john.doe@example.com"
+                },
+                "first_name": {
+                    "description": "First name of the new user",
+                    "type": "string",
+                    "example": "John"
+                },
+                "id": {
+                    "description": "First name of the new user",
+                    "type": "string",
+                    "example": "23GfxRTs"
+                },
+                "last_name": {
+                    "description": "First last name of the new user",
+                    "type": "string",
+                    "example": "Doe"
+                },
+                "second_last_name": {
+                    "description": "Second last name of the new user",
+                    "type": "string",
+                    "example": "Smith"
                 }
             }
         }
-    },
-    "tags": [
-        {
-            "description": "Saludo de bienvenida tag",
-            "name": "Saludo"
-        },
-        {
-            "description": "Autenticación tag",
-            "name": "Auth"
-        }
-    ]
+    }
 }`
 
-// SwaggerInfo holds exported Swagger Info 
+// SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8080",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "Gommence",
-	Description:      "Go web server kickstarter",
+	Description:      "Go Web Server push starter",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

@@ -12,7 +12,7 @@ import (
 	"github.com/Manolo-Esc/gommence/src/internal/adapters/repos_db"
 	"github.com/Manolo-Esc/gommence/src/internal/domain"
 	"github.com/Manolo-Esc/gommence/src/internal/dtos"
-	opologger "github.com/Manolo-Esc/gommence/src/pkg/logger"
+	mylogger "github.com/Manolo-Esc/gommence/src/pkg/logger"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -34,7 +34,6 @@ func (s *databaseIntegrationSuite) SetupSuite() { // SetupSuite runs once, befor
 
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
-	//err = database.Migrate(ctx, s.db)
 	err = createTestDatabase(ctx, s.db)
 	if err != nil {
 		s.T().Fatalf("Error running migration: %v", err)
@@ -68,7 +67,7 @@ func (s *databaseIntegrationSuite) Test_CreateEntityWithPID_DupFields() {
 }
 
 func (s *databaseIntegrationSuite) Test_FindUsersByEmail() {
-	dbUser := dtos.UserCreate{
+	dbUser := dtos.InternalUserCreate{
 		FirstName:      "John",
 		FirstLastName:  "Doe",
 		Email:          "John.Doe@mailer.com",
@@ -76,7 +75,7 @@ func (s *databaseIntegrationSuite) Test_FindUsersByEmail() {
 		HashedPassword: "hashedPassword",
 	}
 
-	repo := repos_db.NewUserRepository(&repos_db.DBReposInfra{Db: s.db, Logger: opologger.GetNopLogger()})
+	repo := repos_db.NewUserRepository(&repos_db.DBReposInfra{Db: s.db, Logger: mylogger.GetNopLogger()})
 	johnID, err := repo.Create(context.Background(), &dbUser)
 	s.Nil(err)
 	s.NotEmpty(johnID)

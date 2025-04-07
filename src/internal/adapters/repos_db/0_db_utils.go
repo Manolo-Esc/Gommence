@@ -15,41 +15,30 @@ import (
 	"gorm.io/gorm"
 )
 
-// type BaseDBModel struct {
-// 	ID        uint `gorm:"primaryKey"`
-// 	CreatedAt time.Time
-// 	UpdatedAt time.Time
-// 	DeletedAt gorm.DeletedAt `gorm:"index"`
-// 	PublicID  string         `gorm:"type:varchar(15);not null;uniqueIndex"`
-// }
-
 type BaseDBModel struct {
 	ID        string `gorm:"primaryKey"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
-	//PublicID  string         `gorm:"type:varchar(15);not null;uniqueIndex"`
 }
 
-// Función para detectar errores de duplicado de clave única en PostgreSQL
 func IsUniqueViolation(err error) bool {
-	//var pgErr *pq.Error
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) {
-		return pgErr.Code == "23505" // Código de error para violación de restricción única en Postgres
+		return pgErr.Code == "23505" // Postgres error code for unique constraint violation
 	}
 	return false
 }
 
+// Creates a new BaseDBModel entity assigning a fancy unique ID
 func CreateEntityWithPID[T any](ctx context.Context, db *gorm.DB, entity *T) ports.APIError {
 	v := reflect.ValueOf(entity).Elem()
-	//publicId := v.FieldByName("PublicID")
 	publicId := v.FieldByName("ID")
 	if !publicId.IsValid() {
-		return ports.NewAPIError(http.StatusInternalServerError, fmt.Sprintf("type %s does not have 'PublicID' field", reflect.TypeOf(*entity).Name()))
+		return ports.NewAPIError(http.StatusInternalServerError, fmt.Sprintf("type %s does not have 'ID' field", reflect.TypeOf(*entity).Name()))
 	}
 	if !publicId.CanSet() || publicId.Kind() != reflect.String {
-		return ports.NewAPIError(http.StatusInternalServerError, fmt.Sprintf("'PublicID' field (%d) of type %s can not be set", int(publicId.Kind()), reflect.TypeOf(*entity).Name()))
+		return ports.NewAPIError(http.StatusInternalServerError, fmt.Sprintf("'ID' field (%d) of type %s can not be set", int(publicId.Kind()), reflect.TypeOf(*entity).Name()))
 	}
 	currentPublicId := publicId.String()
 	if currentPublicId == "" { // we try to respect the publicId if we get one, but we'll change it if we get UniqueViolation error
@@ -77,15 +66,3 @@ type DBReposInfra struct {
 	Db     *gorm.DB
 	Logger logger.LoggerService
 }
-
-// var (
-// 	tracer trace.Tracer
-// 	once   sync.Once
-// )
-
-// func getTracer() trace.Tracer {
-// 	once.Do(func() {
-// 		tracer = otel.Tracer("repos_db")
-// 	})
-// 	return tracer
-// }

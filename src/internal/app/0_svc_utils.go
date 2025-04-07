@@ -8,6 +8,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
+// Some dependencies that most business modules will need
 type ServiceInfra struct {
 	Logger      logger.LoggerService
 	Cache       cache.CacheService
