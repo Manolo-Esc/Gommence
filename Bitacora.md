@@ -26,7 +26,7 @@ Introducimos este proyecto para poder tener en marcha rápidamente un servidor w
 - Inyección explícita de dependencias (sin magia)
 - Incluye soporte de tokens JWT, hashing de passwords y middleware de autenticación
 - Tests unitarios, e2e y de integración con base de datos
-- Incluye Dockerfile para una imagen del servicio y docker-compose para ejecutar el servicio con una base de datos
+- Incluye un Dockerfile del servicio y un docker-compose para ejecutar el servicio con una base de datos
 - Integra [testify](https://github.com/stretchr/testify) y [gomock](https://github.com/golang/mock) 
 - Integra el ORM [gorm](https://gorm.io) (mucha magia XD)
 - Validación de datos con la libreria [validator](https://github.com/go-playground/validator/)
@@ -35,10 +35,33 @@ Introducimos este proyecto para poder tener en marcha rápidamente un servidor w
 - Integra logs con un layer sobre [zap](https://github.com/uber-go/zap)
 - Incluye soporte de OpenTelemetry
 - Integra soporte de cache con un layer sobre [ristretto](https://github.com/hypermodeinc/ristretto) fácilmente extensible a, por ejemplo, redis.
+- Integra la libreria godotenv para gestión de variables de entorno
+
+### Run from docker-compose
+Asumiendo que ya está docker instalado, ejecutar en el folder principal:
+```sh
+docker compose up --build -d
+```
+Puedes verificar que el entorno se ha levantado ejecutando lo siguiente y comprobando que hay dos contenedores llamados _go_web_server_ y _go_postgres_
+```sh
+docker ps
+```
+Si algo no fue bien puedes chequear los logs de los contenedores
+```sh
+docker logs go_web_server
+docker logs go_postgres
+```
+Para terminar la ejecución usa
+```sh
+docker compose down
+```
+
+### Run from source
+Necesitarás tener funcionando una instalación de postgres con una base de datos vacia llamada _my_db_, o el nombr
 
 
 ### Créditos
-Este código ha tomado ideas de varias fuentes, en especial de [Mat Ryer](https://grafana.com/blog/2024/02/09/how-i-write-http-services-in-go-after-13-years/) y de [Joe Shaw](https://www.joeshaw.org/error-handling-in-go-http-applications/)
+Hasta llegar a este estado este código ha ido tomando con el tiempo ideas de varias fuentes, blogs e IAs, pero quiero destacar especialmente a [Mat Ryer](https://grafana.com/blog/2024/02/09/how-i-write-http-services-in-go-after-13-years/) y a [Joe Shaw](https://www.joeshaw.org/error-handling-in-go-http-applications/)
   
 - assertions
 

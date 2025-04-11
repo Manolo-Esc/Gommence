@@ -24,6 +24,7 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
+	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -98,18 +99,32 @@ func tryOpenDatabase(dsn string) (*gorm.DB, error) {
 			}
 		}
 	}
+	return db, nil
 }
 
-func initDatabase(ctx context.Context, dsn string) (*gorm.DB, error) {
-	// db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	// if err != nil {
-	// 	log.Fatal("Error connecting to database:", err)
-	// 	return nil, err
-	// }
+func getEnvOrDefault(key, defaultVal string, getenv func(string) string) string {
+	val := getenv(key)
+	if val == "" {
+		log.Printf("Environment variable %s not set, using default value: %s\n", key, defaultVal)
+		return defaultVal
+	}
+	log.Printf("Using environment variable %s: %s\n", key, val)
+	return val
+}
+
+
+func initDatabase(ctx context.Context, getenv func(string) string/*, dsn string*/) (*gorm.DB, error) {
+	dbHost := getEnvOrDefault("DB_HOST", "localhost", getenv)
+	dbUser := getEnvOrDefault("DB_USER", "postgres", getenv)
+	dbPass := getEnvOrDefault("DB_PASSWORD", "password", getenv)
+	dbName := getEnvOrDefault("DB_NAME", "sample_db", getenv)
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=5432 sslmode=disable TimeZone=UTC", dbHost, dbUser, dbPass, dbName)
+
 	db, err := tryOpenDatabase(dsn)
 	if err != nil {
 		return nil, err
 	}
+	log.Println("Connected to database")
 	err = database.Migrate(ctx, db)
 	if err != nil {
 		log.Fatal("Error migrating or cheking database version: ", err)
@@ -123,6 +138,11 @@ func Run(ctx context.Context, args []string, getenv func(string) string, stdin i
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM, syscall.SIGHUP) // We must not capture SIGKILL or SIGSTOP
 	defer cancel()
 
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("No .env file found. Carrying on...")
+	}
+
 	tp, err := initTracerProvider()
 	if err != nil {
 		fmt.Println("Error initializing OpenTelemetry:", err)
@@ -131,14 +151,16 @@ func Run(ctx context.Context, args []string, getenv func(string) string, stdin i
 	logger := logger.GetLogger()
 	defer logger.Sync()
 
-	db, err := initDatabase(ctx, "host=localhost user=postgres password=secret dbname=my_db port=5432 sslmode=disable TimeZone=UTC") // args or getenv should be used here
+	//db, err := initDatabase(ctx, "host=localhost user=postgres password=secret dbname=my_db port=5432 sslmode=disable TimeZone=UTC") // args or getenv should be used here
+	db, err := initDatabase(ctx, getenv) //"host=db user=postgres password=secret dbname=my_db port=5432 sslmode=disable TimeZone=UTC") // args or getenv should be used here
 	if err != nil {
 		return err
 	}
 
 	appModules := ProductionAppModulesFactory(logger, db, cache.GetCache())
 
-	config := Config{Host: "127.0.0.1", Port: "5080"} // args or getenv should be used here
+	//config := Config{Host: "127.0.0.1", Port: "5080"} // args or getenv should be used here
+	config := Config{Host: "0.0.0.0", Port: "5080"} // args or getenv should be used here
 
 	srv := WebServiceFactory(appModules, logger, db)
 
