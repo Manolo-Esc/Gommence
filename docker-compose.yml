@@ -12,8 +12,8 @@ services:
       DB_HOST: db
       DB_PORT: 5432
       DB_USER: postgres
-      DB_PASSWORD: password
-      DB_NAME: mydb
+      DB_PASSWORD: secret
+      DB_NAME: my_db
 
   db:
     image: postgres:16
@@ -21,12 +21,10 @@ services:
     restart: always
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: mydb
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: my_db
     ports:
       - "5432:5432"
-    volumes:
-      - pg_data:/var/lib/postgresql/data
 
-volumes:
-  pg_data:
+
+

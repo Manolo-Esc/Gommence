@@ -12,7 +12,7 @@ RUN go mod download
 COPY . .
 
 # Construir el binario
-RUN go build -o server .
+RUN go build -o server ./src/cmd
 
 # Exponer el puerto en el que correrá el servidor
 EXPOSE 5080

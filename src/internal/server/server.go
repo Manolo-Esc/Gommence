@@ -78,10 +78,36 @@ func initTracerProvider() (*trace.TracerProvider, error) {
 	return tp, nil
 }
 
-func initDatabase(ctx context.Context, dsn string) (*gorm.DB, error) {
+
+func tryOpenDatabase(dsn string) (*gorm.DB, error) {
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil { // give some time in case the database in the docker compose is also starting up
+		timeout := time.After(5 * time.Second)
+		ticker := time.NewTicker(1 * time.Second)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-timeout:
+				return nil, err
+			case <-ticker.C:
+				db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+				if err == nil {
+					return db, nil
+				}
+			}
+		}
+	}
+}
+
+func initDatabase(ctx context.Context, dsn string) (*gorm.DB, error) {
+	// db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	// if err != nil {
+	// 	log.Fatal("Error connecting to database:", err)
+	// 	return nil, err
+	// }
+	db, err := tryOpenDatabase(dsn)
 	if err != nil {
-		log.Fatal("Error connecting to database:", err)
 		return nil, err
 	}
 	err = database.Migrate(ctx, db)

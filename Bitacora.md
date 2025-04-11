@@ -32,21 +32,17 @@ Introducimos este proyecto para poder tener en marcha rápidamente un servidor w
 - Validación de datos con la libreria [validator](https://github.com/go-playground/validator/)
 - Incorpora swagger con la libraría [swaggo](https://github.com/swaggo/swag)
 - Custom ID generation, much fancier and compact than common GUIDs
-- Integra logs con la libraría [zap](https://github.com/uber-go/zap)
+- Integra logs con un layer sobre [zap](https://github.com/uber-go/zap)
 - Incluye soporte de OpenTelemetry
-- Integra soporte de cache con un layer sobre [ristretto](https://github.com/uber-go/zap) fácilmente extensible a, por ejemplo, redis.
+- Integra soporte de cache con un layer sobre [ristretto](https://github.com/hypermodeinc/ristretto) fácilmente extensible a, por ejemplo, redis.
 
 
-## Featuring
-- ideas from 
-  https://www.joeshaw.org/error-handling-in-go-http-applications/
-  https://grafana.com/blog/2024/02/09/how-i-write-http-services-in-go-after-13-years/
+### Créditos
+Este código ha tomado ideas de varias fuentes, en especial de [Mat Ryer](https://grafana.com/blog/2024/02/09/how-i-write-http-services-in-go-after-13-years/) y de [Joe Shaw](https://www.joeshaw.org/error-handling-in-go-http-applications/)
+  
 - assertions
 
-### Misc
-- documentar que todos pueden devolver http.StatusUnauthorized??
-
-- next steps:
+### Next steps
   - tool para crear typescripts?
   - posibilidad de generar metricas propias
   - crear usuario
