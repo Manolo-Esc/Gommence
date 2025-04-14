@@ -57,7 +57,45 @@ docker compose down
 ```
 
 ### Run from source
-Necesitarás tener funcionando una instalación de postgres con una base de datos vacia llamada _my_db_, o el nombr
+Necesitarás tener funcionando una instalación de postgres con una base de datos vacia llamada _my_db_, o el nombre que le pongas en el fichero `.env`.
+Desde la raiz del proyecto ejecuta:
+```sh
+go run src/cmd/main.go
+```
+
+### Calling the service
+Hay unas cuantas llamadas que puedes hacer para probar el servicio. Estos ejemplos usan _curl_:
+
+#### Check liveness
+El  endpoint _health_ se puede alcanzar con dos rutas: 
+```sh
+curl -X GET http://localhost:5080/health
+curl -X GET http://localhost:5080/api/v1/health
+```
+
+#### Get authentication token
+Para efectuar un login y obtener el login de autenticacion de las siguientes llamadas para el usuario _user@mail.com_ (que existe en la base de datos del programa con password _password_)
+```sh
+curl -X POST http://localhost:5080/api/v1/auth/signin \
+    -H "Content-Type: application/json" \
+    -d '{"email": "user@mail.com", "secret": "password"}'
+```
+
+#### Get the list of users
+Obtiene una lista de todos los usuarios del sistema. Devuelve error si el caller no pasa un token válido (obtenido con la llamada anterior)
+```sh
+curl -X GET http://localhost:5080/api/v1/user \
+    -H "Authorization: Bearer the_token_here"
+```
+
+#### Get information about a specific user
+Para obtener información adicional sobre un usuario dado, cuyo ID se pasa como parámetro en el url. Puedes obtener el ID con la llamada anterior. Devuelve error si el caller no pasa un token válido
+```sh
+curl -X GET http://localhost:5080/api/v1/user/a_valid_id \
+    -H "Authorization: Bearer the_token_here"
+```
+
+
 
 
 ### Créditos
@@ -81,21 +119,6 @@ Hasta llegar a este estado este código ha ido tomando con el tiempo ideas de va
 - añadir handlers en router
 
 
-## Instructions
-
-### run
-
-
-### curl
-- curl -X POST http://localhost:5080/api/v1/auth/signin \
-    -H "Content-Type: application/json" \
-    -d '{"email": "user@mail.com", "secret": "password"}'
-
-- curl -X GET http://localhost:5080/api/v1/user \
-    -H "Authorization: Bearer your_token"
-
-- curl -X GET http://localhost:5080/api/v1/user/a_valid_id \
-    -H "Authorization: Bearer your_token"
 
 
 ## Procedimientos Back
