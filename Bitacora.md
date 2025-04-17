@@ -25,9 +25,8 @@ Introducimos este proyecto para poder tener en marcha rápidamente un servidor w
 - Arquitectura hexagonal para testeabilidad y desacoplamiento
 - Inyección explícita de dependencias (sin magia)
 - Incluye soporte de tokens JWT, hashing de passwords y middleware de autenticación
-- Tests unitarios, e2e y de integración con base de datos
+- Tests unitarios (integra [testify](https://github.com/stretchr/testify) y [gomock](https://github.com/golang/mock)), e2e y de integración con base de datos
 - Incluye un Dockerfile del servicio y un docker-compose para ejecutar el servicio con una base de datos
-- Integra [testify](https://github.com/stretchr/testify) y [gomock](https://github.com/golang/mock) 
 - Integra el ORM [gorm](https://gorm.io) (mucha magia XD)
 - Validación de datos con la libreria [validator](https://github.com/go-playground/validator/)
 - Incorpora swagger con la libraría [swaggo](https://github.com/swaggo/swag)
@@ -37,7 +36,7 @@ Introducimos este proyecto para poder tener en marcha rápidamente un servidor w
 - Integra soporte de cache con un layer sobre [ristretto](https://github.com/hypermodeinc/ristretto) fácilmente extensible a, por ejemplo, redis.
 - Integra la libreria godotenv para gestión de variables de entorno
 
-### Run from docker-compose
+## Run from docker-compose
 Asumiendo que ya está docker instalado, ejecutar en el folder principal:
 ```sh
 docker compose up --build -d
@@ -56,24 +55,24 @@ Para terminar la ejecución usa
 docker compose down
 ```
 
-### Run from source
+## Run from source
 Necesitarás tener funcionando una instalación de postgres con una base de datos vacia llamada _my_db_, o el nombre que le pongas en el fichero `.env`.
 Desde la raiz del proyecto ejecuta:
 ```sh
 go run src/cmd/main.go
 ```
 
-### Calling the service
+## Calling the service
 Hay unas cuantas llamadas que puedes hacer para probar el servicio. Estos ejemplos usan _curl_:
 
-#### Check liveness
+### Check liveness
 El  endpoint _health_ se puede alcanzar con dos rutas: 
 ```sh
 curl -X GET http://localhost:5080/health
 curl -X GET http://localhost:5080/api/v1/health
 ```
 
-#### Get authentication token
+### Get authentication token
 Para efectuar un login y obtener el login de autenticacion de las siguientes llamadas para el usuario _user@mail.com_ (que existe en la base de datos del programa con password _password_)
 ```sh
 curl -X POST http://localhost:5080/api/v1/auth/signin \
@@ -81,14 +80,14 @@ curl -X POST http://localhost:5080/api/v1/auth/signin \
     -d '{"email": "user@mail.com", "secret": "password"}'
 ```
 
-#### Get the list of users
+### Get the list of users
 Obtiene una lista de todos los usuarios del sistema. Devuelve error si el caller no pasa un token válido (obtenido con la llamada anterior)
 ```sh
 curl -X GET http://localhost:5080/api/v1/user \
     -H "Authorization: Bearer the_token_here"
 ```
 
-#### Get information about a specific user
+### Get information about a specific user
 Para obtener información adicional sobre un usuario dado, cuyo ID se pasa como parámetro en el url. Puedes obtener el ID con la llamada anterior. Devuelve error si el caller no pasa un token válido
 ```sh
 curl -X GET http://localhost:5080/api/v1/user/a_valid_id \
@@ -96,9 +95,12 @@ curl -X GET http://localhost:5080/api/v1/user/a_valid_id \
 ```
 
 
+## Swagger documentation
+The project uses _swaggo_ to generate API documentation from annotations in the code. Puedes ver el resultado apuntando un browser a 
+`localhost:5080/api/v1/
 
 
-### Créditos
+## Créditos
 Hasta llegar a este estado este código ha ido tomando con el tiempo ideas de varias fuentes, blogs e IAs, pero quiero destacar especialmente a [Mat Ryer](https://grafana.com/blog/2024/02/09/how-i-write-http-services-in-go-after-13-years/) y a [Joe Shaw](https://www.joeshaw.org/error-handling-in-go-http-applications/)
   
 - assertions
