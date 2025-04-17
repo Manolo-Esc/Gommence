@@ -1,15 +1,13 @@
 
 
 ## To Do
-- xxxx
 - verificar que no hay ningun folder "logs" que vaya a git
-- limpiar folder docs
-- docker with postgres: //docker run --name Test -p 5432:5432 -e POSTGRES_USER=postgres -e POSTGRES_DB=my_db -e POSTGRES_PASSWORD=secret -d postgres:16.3
-- docker, docker compose con db?
+
+- dejamos el middleware-jwt donde está o lo movemos a infra?? no tiene sentido que use infra/jwt, que es menos publico :(
 - run tests
   - ejecutar todos los tests
   - run db tests?
-- borrar bitacora.md
+- convertir bitacora.md en readme.md
 
 textos
 "Starter kit"
@@ -18,92 +16,162 @@ textos
 
 # Gommence
 
-A starter kit for go web services
+**A Starter Kit for Go Web Services**
 
-Introducimos este proyecto para poder tener en marcha rápidamente un servidor web featuring:
-- Uso del módulo estándar http y del router [chi](https://github.com/go-chi/) (sin magia)
-- Arquitectura hexagonal para testeabilidad y desacoplamiento
-- Inyección explícita de dependencias (sin magia)
-- Incluye soporte de tokens JWT, hashing de passwords y middleware de autenticación
-- Tests unitarios (integra [testify](https://github.com/stretchr/testify) y [gomock](https://github.com/golang/mock)), e2e y de integración con base de datos
-- Incluye un Dockerfile del servicio y un docker-compose para ejecutar el servicio con una base de datos
-- Integra el ORM [gorm](https://gorm.io) (mucha magia XD)
-- Validación de datos con la libreria [validator](https://github.com/go-playground/validator/)
-- Incorpora swagger con la libraría [swaggo](https://github.com/swaggo/swag)
-- Custom ID generation, much fancier and compact than common GUIDs
-- Integra logs con un layer sobre [zap](https://github.com/uber-go/zap)
-- Incluye soporte de OpenTelemetry
-- Integra soporte de cache con un layer sobre [ristretto](https://github.com/hypermodeinc/ristretto) fácilmente extensible a, por ejemplo, redis.
-- Integra la libreria godotenv para gestión de variables de entorno
+We're introducing this project to quickly spin up a web server featuring:
 
-## Run from docker-compose
-Asumiendo que ya está docker instalado, ejecutar en el folder principal:
+- Use of the standard `http` module and the [chi](https://github.com/go-chi/) router (no magic included)
+- Hexagonal architecture for better decoupling and testability
+- Explicit dependency injection (no magic included)
+- Built-in support for JWT tokens, password hashing, and authentication middleware
+- Unit testing (integrates [testify](https://github.com/stretchr/testify) and [gomock](https://github.com/golang/mock)), plus e2e and database integration tests
+- Includes a service Dockerfile and a `docker-compose` setup to run the service with a database
+- Integrates the [gorm](https://gorm.io) ORM (loads of magic here, you’ve been warned XD)
+- Data validation with the [validator](https://github.com/go-playground/validator/) library
+- Swagger integration via [swaggo](https://github.com/swaggo/swag)
+- Custom ID generation — much fancier and more compact than your average GUID
+- Logging layer on top of [zap](https://github.com/uber-go/zap)
+- OpenTelemetry support baked in
+- Integrated cache layer using [ristretto](https://github.com/hypermodeinc/ristretto), easily extensible to Redis or others
+- Uses [godotenv](https://github.com/joho/godotenv) for environment variable management
+
+
+## Run with Docker Compose
+
+Assuming you already have Docker installed, run the following from the root folder:
+
 ```sh
 docker compose up --build -d
 ```
-Puedes verificar que el entorno se ha levantado ejecutando lo siguiente y comprobando que hay dos contenedores llamados _go_web_server_ y _go_postgres_
+
+You can verify the environment is up and running by executing:
+
 ```sh
 docker ps
 ```
-Si algo no fue bien puedes chequear los logs de los contenedores
+
+You should see two containers named *go_web_server* and *go_postgres*. If not, something went sideways.
+
+To check what went wrong, you can inspect the logs:
+
 ```sh
 docker logs go_web_server
 docker logs go_postgres
 ```
-Para terminar la ejecución usa
+
+To stop and clean everything up, use:
+
 ```sh
 docker compose down
 ```
 
-## Run from source
-Necesitarás tener funcionando una instalación de postgres con una base de datos vacia llamada _my_db_, o el nombre que le pongas en el fichero `.env`.
-Desde la raiz del proyecto ejecuta:
+## Run from Source
+
+You'll need a running Postgres installation with an empty database named *my_db* —or whatever name you’ve set in the `.env` file.
+
+Once you’ve cloned the project, install the dependencies from the project root with:
+
+```sh
+go mod download
+```
+
+Then run the program from the root directory:
+
 ```sh
 go run src/cmd/main.go
 ```
 
-## Calling the service
-Hay unas cuantas llamadas que puedes hacer para probar el servicio. Estos ejemplos usan _curl_:
+## Calling the Service
 
-### Check liveness
-El  endpoint _health_ se puede alcanzar con dos rutas: 
+Here are a few sample calls you can make to test the service. These examples use _curl_:
+
+### Check Liveness
+
+The _health_ endpoint is available via two routes:
+
 ```sh
 curl -X GET http://localhost:5080/health
 curl -X GET http://localhost:5080/api/v1/health
 ```
 
-### Get authentication token
-Para efectuar un login y obtener el login de autenticacion de las siguientes llamadas para el usuario _user@mail.com_ (que existe en la base de datos del programa con password _password_)
+### Get Authentication Token
+
+You can log in and get an authentication token for future requests using the built-in user _user@mail.com_ (with password _password_):
+
 ```sh
 curl -X POST http://localhost:5080/api/v1/auth/signin \
     -H "Content-Type: application/json" \
     -d '{"email": "user@mail.com", "secret": "password"}'
 ```
 
-### Get the list of users
-Obtiene una lista de todos los usuarios del sistema. Devuelve error si el caller no pasa un token válido (obtenido con la llamada anterior)
+### Get the List of Users
+
+Fetch all users in the system. This request will fail if you don’t provide a valid token (obtained from the previous call):
+
 ```sh
 curl -X GET http://localhost:5080/api/v1/user \
     -H "Authorization: Bearer the_token_here"
 ```
 
-### Get information about a specific user
-Para obtener información adicional sobre un usuario dado, cuyo ID se pasa como parámetro en el url. Puedes obtener el ID con la llamada anterior. Devuelve error si el caller no pasa un token válido
+### Get Information About a Specific User
+
+To get details about a specific user (whose ID you can retrieve from the previous call), make this request. As before, it requires a valid token:
+
 ```sh
 curl -X GET http://localhost:5080/api/v1/user/a_valid_id \
     -H "Authorization: Bearer the_token_here"
 ```
 
+## Hexagonal Architecture
+
+The [hexagonal architecture](https://en.wikipedia.org/wiki/Hexagonal_architecture_(software)) —also known as the ports and adapters architecture— was proposed by Alistair Cockburn back in 2005. The core idea is to isolate business logic from external concerns like UIs, APIs, storage, or third-party services.
+
+You define **interfaces (ports)** to connect your application’s core logic with its external clients and providers. Then you create **adapters** that either *implement* these interfaces to provide functionality to the core logic (e.g., database access), or *consume* the core logic (e.g., REST endpoints or UIs). Conceptually, you’re splitting your system into **application components** (the business logic) and the **adapters** that talk to each other through ports.
+
+In **Gommence**, business logic lives in the `_app_` and `_domain_` folders. Adapters can be found under `_adapters/repos_db_` and `_adapters/rest_`. The `_dtos_` folder contains the _data transfer objects_ used by the input ports. Interfaces (ports) themselves are defined in the `_ports_` folder.
+
+This level of modularity can seem a bit cumbersome at first. Adding a new entry point to the service might mean creating two new ports, two new adapters, remake the mock objects, and writing the actual logic. Yes, it’s some overhead. But the **decoupling and testability** you get in return? Worth it, especially for large or long-lived projects. If you’re building something that’s going to grow or stick around, this architecture pays off.
+
+### Add entities recipe
+**Gommence** incluye entidades _user_ como referencia. Supongamos que ahora queremos añadir una nueva entidad, como *user_post*, or _coche_, o _mascota_. Estos son los puntos que posiblemente haya que tocar:
+- definicion de servicio y repo en _ports_
+- Creación de entity (representación en base de datos) y repository (database management) en *adapters/repos_db*
+- servicio (logica de negocio)) en _app_
+- http handlers en _adapters/rest_
+- dtos en _dtos_
+- añadir servicio a app_modules.go en _server_
+- añadir handlers en _router_
+
+## Tests
+
+### Running tests
+- Tests
+  - ejecutar tests: en root o src ejecutar: `go test ./...` o en modo verbose `\ `
+  - ejecutar tests de un paquete (folder) en concreto: ir al paquete y ejecutar `go test` o `go test <ruta_al_paquete>`
+
+### Generate mocks
+- Cambiar al folder ports (o donde esté el interface del que se quiera generar mocks, pero atención al nombre en destination no colisione)
+- `mockgen -source=name_of_the_entity_ports.go -destination=../mocks/name_of_the_entity_mocks.go -package=mocks`
+### Unit tests
+### E2E
+### Database integration test
 
 ## Swagger documentation
 The project uses _swaggo_ to generate API documentation from annotations in the code. Puedes ver el resultado apuntando un browser a 
-`localhost:5080/api/v1/
-
+`http://localhost:5080/api/v1/doc/index.html`
+Para generar la documentación 
+- Instalar _swag_: 
+  ```sh
+  go install github.com/swaggo/swag/cmd/swag@latest
+  ```
+- Cambiar al folder src y ejecuta lo que sigue. Debes incluir todos los folders en los que hayas hecho anotaciones en los ficheros go 
+  ```sh
+  swag init -g router.go -d internal/server,internal/dtos,internal/adapters/rest
+  ```
 
 ## Créditos
-Hasta llegar a este estado este código ha ido tomando con el tiempo ideas de varias fuentes, blogs e IAs, pero quiero destacar especialmente a [Mat Ryer](https://grafana.com/blog/2024/02/09/how-i-write-http-services-in-go-after-13-years/) y a [Joe Shaw](https://www.joeshaw.org/error-handling-in-go-http-applications/)
+Hasta llegar a este estado este código ha ido tomando con el tiempo ideas de varias fuentes, blogs e IAs, pero quiero destacar especialmente el trabajo de [Mat Ryer](https://grafana.com/blog/2024/02/09/how-i-write-http-services-in-go-after-13-years/) y de [Joe Shaw](https://www.joeshaw.org/error-handling-in-go-http-applications/)
   
-- assertions
 
 ### Next steps
   - tool para crear typescripts?
@@ -111,38 +179,7 @@ Hasta llegar a este estado este código ha ido tomando con el tiempo ideas de va
   - crear usuario
 
 
-## Add entities recipe
-- definicion de servicio y repo en ports
-- Entity, Repo y factory(db) en adapters/repos_db
-- dtos en dtos
-- servicio y factory(repo) en app
-- handlers y factory(servicio) en adapters/rest
-- añadir servicio a app_modules.go en server
-- añadir handlers en router
-
-
-
-
-## Procedimientos Back
-- ejecutar back: en root ejecutar: `go run src/cmd/main.go` o en src: `go run cmd/main.go`
-- descargar dependencias: `go mod download`
-- vaciar caches de compilacion: `go clean -cache`
-- generar swagger: 
-  - Instalar: go install github.com/swaggo/swag/cmd/swag@latest
-  - cambiar a src y ejecutar `swag init -g router.go -d internal/server,internal/dtos,internal/adapters/rest`
-- Tests
-  - ejecutar tests: en root o src ejecutar: `go test ./...` o en modo verbose `\ `
-  - ejecutar tests de un paquete en concreto: ir al paquete y ejecutar `go test` o `go test <ruta_al_paquete>`
-  - informe de cobertura de tests: en root o src ejecutar: go test -cover ./...
-  - detector de race conditions: en root o src ejecutar: go test -race ./...
-- Mocks
-  - Cambiar al folder ports (o donde esté el interface del que se quiera generar mocks, pero atención al nombre en destination no colisione)
-  - `mockgen -source=name_of_the_entity_ports.go -destination=../mocks/name_of_the_entity_mocks.go -package=mocks`
-
-
-
-
-### Cheatsheet de la DB del docker
+## Cheatsheet de la DB del docker
 - consola postgreSQL:  
     `psql -dmy_db -Upostgres`
 
@@ -161,11 +198,11 @@ Hasta llegar a este estado este código ha ido tomando con el tiempo ideas de va
         END $$;
 ``` 
     - Comandos
-        \list           lista las databases existentes
-        \c savimboplatform   Hacer de savimbo la DB current (para otros comandos)
-        \dt             Lista las tablas de la databse current
-        \dn             Lista los esquemas de una base de datos
+        \dt             Lista las tablas de la current database
         \d table        Muestra el esquema de la tabla
+        \list           lista las databases existentes
+        \c my_db   Hacer de my_db la current database para otros comandos
+       
 
 
 

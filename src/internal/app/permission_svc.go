@@ -23,12 +23,13 @@ func (s *PermissionServiceImpl) GetUserGlobalPermissions(ctx context.Context, fo
 	return nil, nil
 }
 
-func (s *PermissionServiceImpl) IsSameUserOrHasSomePermission(byUser string, forUser string, permissions []domain.Permission) (bool, ports.APIError) {
+func (s *PermissionServiceImpl) IsSameUserOrHasSomePermission(byUser string, forUser string, neededPermissions []domain.Permission) (bool, ports.APIError) {
 	if byUser == forUser {
 		return true, nil
 	}
-	// XXX read permissions from cache
-	// XXX read permissions from db and store in cache
-	// XXX check if user has any of the permissions
+	// To Do
+	// read permissions from cache
+	// not in cache? read permissions from db and store in cache
+	// check if user has any of the permissions
 	return false, ports.NewAPIError(http.StatusForbidden, "The data is not accessible")
 }
