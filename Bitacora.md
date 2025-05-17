@@ -150,6 +150,7 @@ This level of modularity can seem a bit cumbersome at first. Adding a new entry 
   - ejecutar tests de un paquete (folder) en concreto: ir al paquete y ejecutar `go test` o `go test <ruta_al_paquete>`
 
 ### Generate mocks
+- hay qinstalar mockgen (https://github.com/uber-go/mock)
 - Cambiar al folder ports (o donde esté el interface del que se quiera generar mocks, pero atención al nombre en destination no colisione)
 - `mockgen -source=name_of_the_entity_ports.go -destination=../mocks/name_of_the_entity_mocks.go -package=mocks`
 ### Unit tests
