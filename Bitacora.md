@@ -24,7 +24,7 @@ We're introducing this project to quickly spin up a web server featuring:
 - Hexagonal architecture for better decoupling and testability
 - Explicit dependency injection (no magic included)
 - Built-in support for JWT tokens, password hashing, and authentication middleware
-- Unit testing (integrates [testify](https://github.com/stretchr/testify) and [gomock](https://github.com/golang/mock)), plus e2e and database integration tests
+- Unit testing (integrates [testify](https://github.com/stretchr/testify) and [gomock](https://github.com/uber-go/mock)), plus e2e and database integration tests
 - Includes a service Dockerfile and a `docker-compose` setup to run the service with a database
 - Integrates the [gorm](https://gorm.io) ORM (loads of magic here, you’ve been warned XD)
 - Data validation with the [validator](https://github.com/go-playground/validator/) library
